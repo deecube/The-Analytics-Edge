@@ -1,0 +1,61 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#predicting elantra car sales
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Week 2/Datasets")
+elantra = read.csv("elantra.csv")
+elantraTrain = subset(elantra, Year<2013)
+elantraTest = subset(elantra, Year > 2012)
+summary(elantraTrain)
+```
+
+```{r}
+#Building a Linear Regression model to predict car sales
+
+model1 = lm(ElantraSales ~ Unemployment + CPI_all + CPI_energy + Queries, data = elantraTrain)
+summary(model1)
+```
+
+```{r}
+# Modelling seasonality
+model2 = lm(ElantraSales ~ Unemployment + CPI_all + CPI_energy + Queries + Month, data = elantraTrain)
+summary(model2)
+```
+
+```{r}
+#New model with month as a factor
+elantraTrain$Month = as.factor(elantraTrain$Month)
+elantraTest$Month = as.factor(elantraTest$Month)
+model3 = lm(ElantraSales ~ Unemployment + CPI_all + CPI_energy + Queries + Month, data = elantraTrain)
+summary(model3)
+```
+
+```{r}
+#correlation between variables 
+elantraTrain$Month = as.numeric(elantraTrain$Month)
+cor(elantraTrain)
+```
+
+```{r}
+#leaner model
+model4 = lm(ElantraSales ~ Unemployment + CPI_all + CPI_energy + Month, data = elantraTrain)
+summary(model4)
+```
+
+```{r}
+#predict
+predictTest = predict(model4, newdata = elantraTest)
+predictTest
+elantraTest$ElantraSales
+SSE = sum((elantraTest$ElantraSales - predictTest)^2)
+SST = sum((elantraTest$ElantraSales - mean(elantraTrain$ElantraSales))^2)
+rSquared = 1 - SSE/SST
+rSquared
+RMSE = sqrt(SSE/nrow(elantraTest))
+elantraTest
+which.max(abs(predictTest - elantraTest$ElantraSales))
+```
+

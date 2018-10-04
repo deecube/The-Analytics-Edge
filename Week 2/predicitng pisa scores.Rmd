@@ -1,0 +1,80 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+```{r}
+#Reading test scores
+
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Week 2/Datasets")
+
+pisaTrain = read.csv("pisa2009Train.csv")
+pisaTest = read.csv("pisa2009Test.csv")
+
+str(pisaTrain)
+summary(pisaTrain)
+```
+
+```{r}
+tapply(pisaTrain$readingScore, pisaTrain$male, mean)
+```
+
+```{r}
+#removing rows with missing data
+
+pisaTrain = na.omit(pisaTrain)
+pisaTest = na.omit(pisaTest)
+
+#changing the reference for the unordered factor variables
+pisaTrain$raceeth = relevel(pisaTrain$raceeth, "White")
+pisaTest$raceeth = relevel(pisaTest$raceeth, "White")
+```
+
+```{r}
+#linear reg model to predict scores
+lmScore = lm(readingScore ~ ., data = pisaTrain)
+summary(lmScore)
+```
+```{r}
+leanModel = step(lmScore)
+summary(leanModel)
+```
+
+```{r}
+#calculating the RMSE of the lmScore model
+SSE = sum(lmScore$residuals^2)
+RMSE = sqrt(SSE/nrow(pisaTrain))
+RMSE
+summary(pisaTrain$readingScore)
+```
+
+```{r}
+#predicting the delta in reading score of two students having grades 11 and 9
+readingScoreDelta = 29.54*(11-9)
+readingScoreDelta
+```
+```{r}
+#predicting on unseen data 
+predTest = predict(lmScore, newdata = pisaTest)
+summary(predTest)
+```
+
+```{r}
+#test set sse and rmse
+SSETest = sum((pisaTest$readingScore - predTest)^2)
+RMSE = sqrt(SSETest/nrow(pisaTest))
+```
+
+```{r}
+#baseline model score prediction and sst
+baseLineScore = mean(pisaTrain$readingScore)
+baseLineScore
+SST = sum((mean(pisaTrain$readingScore) - pisaTest$readingScore)^2)
+SST
+rsquared = 1 - SSETest/SST
+rsquared
+```
+

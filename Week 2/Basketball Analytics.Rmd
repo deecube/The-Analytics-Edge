@@ -1,0 +1,47 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#Week 2 recitation
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Week 2/Datasets")
+nbaTrain = read.csv("NBA_train.csv")
+```
+
+```{r}
+#making the playoffs
+
+table(nbaTrain$W, nbaTrain$Playoffs)
+plot(nbaTrain$W, nbaTrain$Playoffs)
+```
+
+```{r}
+#predicting the number of games that a team would win depending on the point diff
+#str(nbaTrain)
+pointsDelta = nbaTrain$PTS - nbaTrain$oppPTS
+modelPredictWins = lm(W~pointsDelta, data = nbaTrain)
+summary(modelPredictWins)
+pointsReq = (42-41)/0.0326
+print (pointsReq) #" more points are required for the team to win atleast 42 games")
+```
+
+```{r}
+#predict points
+modelPoints = lm(PTS ~ X2PA+X3PA+FTA+AST+ORB+STL, data = nbaTrain)
+summary(modelPoints)
+
+```
+
+```{r}
+nbaTest = read.csv("NBA_Test.csv")
+nbaTest$PTS
+pointsPredict = predict(modelPoints, newdata = nbaTest)
+pointsPredict
+SSE = sum((pointsPredict-nbaTest$PTS)^2)
+SST = sum((mean(nbaTest$PTS) - nbaTest$PTS)^2)
+rSquared = 1 - (SSE/SST)
+rSquared
+RMSE = sqrt(SSE/nrow(nbaTest))
+RMSE
+```

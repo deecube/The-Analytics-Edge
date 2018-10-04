@@ -1,0 +1,262 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+library(dplyr)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+#Read input file
+getwd()
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Datasets")
+WHO = read.csv("WHO.csv")
+```
+
+```{r}
+#Exploring the dataset
+summary(WHO)
+str(WHO)
+```
+
+```{r}
+#Quick Question 1
+mean(WHO$Over6)
+WHO$Country[which.min(WHO$Over60)]
+WHO$Country[which.max(WHO$LiteracyRate)]
+```
+
+```{r}
+#Plots and summary tables
+hist(WHO$CellularSubscribers)
+boxplot(WHO$LifeExpectancy ~ WHO$Region, xlab ="", ylab="Life EXpectancy", main="Life Expectancy by Region")
+tapply(WHO$Over60, WHO$Region, mean)
+#Removing missing values from Literacy Rate
+tapply(WHO$LiteracyRate, WHO$Region, min, na.rm = 'TRUE')
+#Quick Questions
+#WHich region has the lowest average child mortality rate?
+which.min(tapply(WHO$ChildMortality, WHO$Region, mean))
+```
+```{r}
+#Recitation 1 : Importance of food and nutrition
+#Obesity as a health problem
+#USDA food database
+getwd()
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Datasets")
+usda = read.csv("USDA.csv")
+str(usda)
+summary(usda)
+```
+
+```{r}
+usda$Description[which.max(usda$Sodium)]
+highSodium = subset(usda, Sodium>10000)
+nrow(highSodium)
+highSodium$Description
+usda$Sodium[match("CAVIAR", usda$Description)]
+mean(usda$Sodium, na.rm = TRUE)
+sd(usda$Sodium, na.rm = TRUE)
+```
+```{r}
+#Creating plots in R
+plot(usda$Protein, usda$TotalFat, xlab = "Protein", ylab = "fat", main = " Protein vs Fat", col = "red")
+summary(usda$VitaminC)
+hist(usda$VitaminC, xlab = "vitamin c")
+hist(usda$VitaminC, xlab = "Vitamin C levels", xlim = c(0,100), breaks = 2000)
+boxplot(usda$Sugar, main = "boxplot of sugar levels", ylab = "sugar(g)")
+```
+
+```{r}
+#Addingn variables
+usda$Sodium [1] > mean (usda$Sodium, na.rm = TRUE)
+# Add highsodium back to usda
+usda$highSodium = as.numeric(usda$Sodium > mean(usda$Sodium, na.rm = TRUE))
+usda$highProtein = as.numeric(usda$Protein > mean(usda$Protein, na.rm=TRUE))
+usda$highFat = as.numeric(usda$TotalFat > mean(usda$TotalFat, na.rm=TRUE))
+usda$highCarb = as.numeric(usda$Carbohydrate > mean(usda$Carbohydrate, na.rm=TRUE))
+#usda <- select (usda, -highSodium.2)
+str(usda)
+
+```
+
+```{r}
+# Summary Tables
+table(usda$highFat)
+# combinations of two variables
+table (usda$highSodium, usda$highFat) # 1st variable - row 2nd variavle - column
+# calculate the average amount of iron sorted by protein levels
+tapply(usda$Iron, usda$highProtein, mean, na.rm = TRUE)
+tapply(usda$VitaminC, usda$highCarb, max, na.rm = TRUE)
+tapply(usda$VitaminC, usda$highCarb, summary, na.rm = TRUE)
+```
+
+```{r}
+#Week 1 Assignment
+getwd()
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Datasets")
+data = read.csv("mvtWeek1.csv")
+nrow(data)
+max(data$ID)
+min(data$Beat)
+nrow(subset(data, data$Arrest == TRUE))
+nrow(subset(data, data$LocationDescription == "ALLEY"))
+data$Date[1]
+DateConvert = as.Date(strptime(data$Date, "%m/%d/%y %H:%M"))
+summary(DateConvert)
+```
+
+```{r}
+data$Month = months(DateConvert)
+data$WeekDay = weekdays(DateConvert)
+data$Date = DateConvert
+table(data$Month)
+table(data$WeekDay)
+table(data$Arrest, data$Month)
+```
+
+```{r}
+hist(data$Date, breaks = 100, main = "Crime Rate over the Years")
+boxplot(data$Arrest ~ data$Date)
+#summary (data$Arrest)
+```
+
+```{r}
+table(data$Arrest, data$Year == 2012)
+```
+
+```{r}
+#sort(table(data$LocationDescription))
+top5 = subset(data, data$LocationDescription=="STREET"| data$LocationDescription== "PARKING LOT/GARAGE(NON.RESID.)" | data$LocationDescription=="ALLEY" | data$LocationDescription=="GAS STATION" | data$LocationDescription=="DRIVEWAY - RESIDENTIAL")
+nrow(top5)
+top5$LocationDescription = factor(top5$LocationDescription)
+#gasStation = subset(top5,top5$LocationDescription == "GAS STATION")
+#tapply (gasStation$Arrest, gasStation$WeekDay, summary)
+residential = subset(top5,top5$LocationDescription == "DRIVEWAY - RESIDENTIAL")
+tapply (residential$Arrest, residential$WeekDay, summary)
+summary(top5)
+```
+
+```{r}
+#Predicting stock prices
+getwd()
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Datasets")
+IBM = read.csv("IBMStock.csv")
+GE = read.csv("GEStock.csv")
+ProcterGamble = read.csv("ProcterGambleStock.csv")
+CocaCola = read.csv("CocaColaStock.csv")
+Boeing = read.csv("BoeingStock.csv")
+IBM$Date = as.Date(IBM$Date, "%m/%d/%y")
+
+GE$Date = as.Date(GE$Date, "%m/%d/%y")
+
+CocaCola$Date = as.Date(CocaCola$Date, "%m/%d/%y")
+
+ProcterGamble$Date = as.Date(ProcterGamble$Date, "%m/%d/%y")
+
+Boeing$Date = as.Date(Boeing$Date, "%m/%d/%y")
+```
+
+```{r}
+str(IBM)
+summary(ProcterGamble)
+mean(IBM$StockPrice, na.rm = TRUE)
+mean(GE$StockPrice, na.rm = TRUE)
+sd(ProcterGamble$StockPrice, na.rm = TRUE)
+```
+
+```{r}
+plot(CocaCola$Date, CocaCola$StockPrice, type ="l", col="red")
+lines(ProcterGamble$Date, ProcterGamble$StockPrice, col ="blue", lty=2)
+abline(v=as.Date(c("2000-03-01")), lwd=2)
+
+
+```
+
+```{r}
+plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210))
+lines(IBM$Date[301:432], IBM$StockPrice[301:432], col="blue")
+lines(ProcterGamble$Date[301:432], ProcterGamble$StockPrice[301:432], col = "green")
+lines(GE$Date[301:432], GE$StockPrice[301:432])
+lines(Boeing$Date[301:432], Boeing$StockPrice[301:432],  col="orange")
+abline(v=as.Date(c("1997-10-01")), lwd=2)
+
+
+```
+```{r}
+which.max(tapply(GE$StockPrice, months(GE$Date), mean))
+which.max(tapply(CocaCola$StockPrice, months(CocaCola$Date), mean))
+tapply(GE$StockPrice, months(GE$Date), summary)
+```
+
+```{r}
+#Demographics and Employment in the US
+getwd()
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Datasets")
+cps = read.csv("CPSData.csv")
+#summary(cps)
+which.max(table(cps$Industry))
+```
+
+```{r}
+sort(table(cps$Citizenship))
+table(cps$Race, cps$Hispanic)
+summary(cps)
+```
+
+```{r}
+table(cps$Region, is.na(cps$Married))
+table(cps$Sex, is.na(cps$Married))
+table(cps$Age, is.na(cps$Married))
+table(cps$Citizenship, is.na(cps$Married))
+
+```
+
+```{r}
+table(cps$State, is.na(cps$MetroAreaCode))
+cps$naMetroCode = is.na(cps$MetroAreaCode)
+tapply(cps$Region, cps$naMetroCode==TRUE, mean)
+```
+
+```{r}
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Datasets")
+metroAreaMap = read.csv("MetroAreaCodes.csv")
+countryMap = read.csv("CountryCodes.csv")
+#mapping mtero area codes to their names
+cps = merge(cps, metroAreaMap, by.x="MetroAreaCode", by.y="Code", all.x=TRUE)
+summary(cps)
+```
+
+```{r}
+sort(table(cps$MetroArea))
+```
+
+```{r}
+sort(tapply(cps$Hispanic, cps$MetroArea, mean))
+```
+
+```{r}
+#sort(tapply(cps$Race=="Asian", cps$MetroArea, mean))
+sort(tapply(cps$Education == "No high school diploma", cps$MetroArea, mean,na.rm=TRUE))
+```
+
+```{r}
+cps = merge(cps, countryMap, by.x="CountryOfBirthCode", by.y = "Code", all.x= TRUE)
+summary(cps)
+```
+
+```{r}
+#sort(table(cps$Country.y))
+#tapply(cps$MetroArea=="New York-Northern New Jersey-Long Island, NY-NJ-PA", cps$Country.x!="United States", mean, na.rm = TRUE)
+table(cps$Country.x == "Somalia", cps$MetroArea)
+```

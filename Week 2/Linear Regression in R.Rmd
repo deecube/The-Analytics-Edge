@@ -1,0 +1,129 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+getwd()
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Week 2/Datasets")
+wine = read.csv("wine.csv")
+```
+
+```{r}
+str(wine)
+summary(wine)
+```
+
+```{r}
+model1 = lm(Price ~ AGST, data = wine)
+summary(model1)
+SSE = sum(model1$residuals^2)
+```
+
+```{r}
+model2 = lm(Price ~ AGST + HarvestRain, data = wine)
+summary(model2)
+SSE2 = sum(model2$residuals^2)
+```
+
+```{r}
+model3 = lm(Price ~ AGST+HarvestRain+WinterRain+Age+FrancePop, data = wine)
+summary(model3)
+SSE3 = sum(model3$residuals^2)
+```
+```{r}
+#QuickQuestion
+
+modelqq = lm(Price ~ HarvestRain + WinterRain, data = wine)
+summary(modelqq)
+```
+
+```{r}
+#improving the model
+# Observe how age becomes a significant variable after removing the francePop
+#This is due to multicollinearity - age and FrancePop are highly correlated
+model4 = lm(Price ~ AGST+HarvestRain+WinterRain+Age, data =wine)
+summary(model4)
+```
+
+```{r}
+model5 = lm(Price ~ AGST+WinterRain+HarvestRain+FrancePop, data=wine)
+summary(model5)
+```
+
+```{r}
+cor(wine)
+```
+
+```{r}
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Week 2/Datasets")
+wineTest = read.csv("wine_test.csv")
+baseball = read.csv("baseball.csv")
+str(wineTest)
+predictTest = predict(model4, newdata = wineTest)
+predictTest
+SSE = sum((wineTest$Price - predictTest)^2)
+SST = sum((wineTest$Price - mean(wine$Price))^2)
+1-SSE/SST
+```
+
+```{r}
+#understanding moneyball
+summary(baseball)
+moneyball = subset(baseball, Year < 2002)
+moneyball$runsDelta = moneyball$RS - moneyball$RA
+plot(moneyball$runsDelta, moneyball$W)
+abline(h=c("95"), lwd=2)
+```
+
+```{r}
+#predicting the wins using Linear Regression as the dataset shows a linear relationship between our variables
+#verifying Paul Depodesta's claim that the team would require a RD of 135 to ba able to win atleast 95 games
+winsReg = lm(W ~runsDelta, data = moneyball)
+summary(winsReg)
+
+runsReq = (95-80.8814)/0.1058
+
+#quick question
+
+predictedWins = 80.881375+0.105766*99
+# edx hasn't used the residula error in the previous question. why?
+```
+
+```{r}
+cor(moneyball$W, moneyball$SLG)
+```
+
+```{r}
+runsReg = lm(RS ~ BA + OBP + SLG, data = moneyball)
+summary(runsReg)
+```
+
+```{r}
+##quick question : runs scored when the OBP = 0.311 and SLG = 0.405
+modelRunsScored = lm(RS ~ OBP+SLG, data = moneyball)
+summary(modelRunsScored)
+runsScored = -804.63 + 2737.77*0.339 + 1584.91*0.430
+runsAllowed = -804.63 + 2737.77*0.307 + 1584.91*0.373
+runsDelta = runsScored - runsAllowed
+winsPredicted2002 = 80.881 + 0.105*(runsDelta)
+
+```
+
+```{r}
+games2013 = subset(baseball, Year = 2013)
+games2013
+
+```
+
+```{r}
+teamRank = c(1,2,3,3,4,4,4,4,5,5)
+wins2012 = subset(baseball, Year == 2012)
+wins2012 = sort(wins2012, wins2012$RankSeason, decreasing = TRUE)[1:10]
+wins2012
+wins2013 = subset(baseball, Year == 2013)
+wins2013 = sort(wins2013$W, decreasing = TRUE)[1:10]
+wins2013
+cor(teamRank, wins2012)
+w
+```

@@ -1,0 +1,50 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Week 2/Datasets")
+climate = read.csv("climate_change.csv")
+str(climate)
+summary(climate)
+```
+```{r}
+#splitting the dataset into test and train
+climateTrain = subset(climate, Year<2007)
+climateTest = subset(climate, Year>2006)
+```
+
+```{r}
+#linear regression model
+model1 = lm(Temp ~ MEI + CO2 + CH4 + N2O + CFC.11 + CFC.12 + TSI + Aerosols, data = climateTrain)
+summary(model1)
+```
+
+```{r}
+#calculating correlation between the variables
+cor(climateTrain)
+```
+```{r}
+#let's take care of the correlations between the variables
+model2 = lm(Temp ~ MEI + TSI + N2O + Aerosols, data = climateTrain)
+summary(model2)
+```
+
+```{r}
+#iterating through various combinations of independent variables to get a simpler model
+ leanModel = step(model1)
+summary(leanModel)
+```
+
+```{r}
+#predicting on unseen data
+
+predictTemp = predict(leanModel, newdata = climateTest)
+predictTemp
+climateTest$Temp
+SSE = sum((predictTemp - climateTest$Temp)^2)
+SST = sum((mean(climateTrain$Temp) - climateTest$Temp)^2)
+rsquared = 1 - SSE/SST
+rsquared
+```
