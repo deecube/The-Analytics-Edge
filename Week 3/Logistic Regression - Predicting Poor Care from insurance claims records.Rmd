@@ -69,4 +69,3 @@ auc = as.numeric(performance(ROCRpredTest, "auc")@y.values)
 auc
 table(qualityTest$PoorCare, predictTest > 0.3)
 ```
-

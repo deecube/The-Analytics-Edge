@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+#The Framingham Heart Study
+#setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Week 3/Datasets")
+framingham = read.csv("framingham.csv")
+str(framingham)
+summary(framingham)
+library(caTools)
+set.seed(1000)
+split = sample.split(framingham$TenYearCHD, SplitRatio = 0.65)
+framinghamTrain = subset(framingham, split == TRUE)
+framinghamTest = subset(framingham, split == FALSE)
+```
+
+```{r}
+#Applying logistic regression 
+model1 = glm(TenYearCHD ~ ., data = framinghamTrain, family = binomial)
+summary(model1)
+```
+
+```{r}
+#Predict using model1
+
+predictTest = predict(model1, type = "response", newdata = framinghamTest)
+table(framinghamTest$TenYearCHD, predictTest > 0.4)
+```
+
+```{r}
+#Generating ROC curves
+
+install.packages("ROCR")
+library(ROCR)
+ROCRpred = prediction(predictTest, framinghamTest$TenYearCHD)
+ROCRperf = performance(ROCRpred, "tpr", "fpr")
+plot(ROCRperf)
+plot(ROCRperf, colorize = TRUE)
+plot(ROCRperf, colorize = TRUE, print.cutoffs.at = seq(0,1,0.1), text.adj = c(-0.2,1.7))
+```
+
+```{r}
+#Understand the significance of the baseline model and also the logical underpinning
+#finding the AUC
+as.numeric(performance(ROCRpred,"auc")@y.values)
+```
+
+```{r}
+#External Validation
+# The framingham study was for white males, the model that we have developed isn't as accurate for other sets of population. Scaling might be required to adjust the predictions
+
+```
+

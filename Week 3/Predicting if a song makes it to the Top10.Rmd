@@ -1,0 +1,67 @@
+```{r}
+songs = read.csv("songs.csv")
+#str(songs)
+#songs2010 = subset(songs, songs$year == 2010)
+#songsMJ = subset(songs, songs$artistname == "Michael Jackson")
+#subset(songsMJ, songsMJ$Top10 == 1 )
+#table(songs$songtitle, songs$tempo)
+#table(songs$songtitle, songs$tempo)
+```
+
+```{r}
+library(dplyr)
+dplyr::filter(songs, songs$tempo >= 244)
+#summary(songs)
+```
+
+```{r}
+#Test train split
+songsTrain = subset(songs, songs$year<=2009)
+songsTest = subset(songs, songs$year>2009)
+```
+
+```{r}
+#removing variables that do not describe numerical attributes of the songs
+
+nonVars = c("year","songtitle", "artistname", "songID", "artistID")
+songsTrain = songsTrain[,!(names(songsTrain) %in% nonVars)]
+songsTest = songsTest[,!(names(songsTest) %in% nonVars)]
+```
+
+```{r}
+#Creating the LogReg model
+
+model1 = glm(Top10 ~ ., data = songsTrain, family = "binomial")
+summary(model1)
+```
+
+```{r}
+cor(songsTrain$loudness, songsTrain$energy)
+```
+
+```{r}
+#Keep energy, omit loudness
+model2 = glm(Top10 ~ .-loudness, data = songsTrain, family = binomial)
+summary(model2)
+```
+
+```{r}
+#keep loudness, omit energy
+
+model3 = glm(Top10 ~ .-energy, data = songsTrain, family = binomial)
+summary(model3)
+```
+
+```{r}
+#predict on test set using model 3
+
+predictTest = predict(model3, newdata = songsTest, type = "response")
+table(songsTest$Top10, predictTest >= 0.45)
+(309+19)/373
+```
+
+```{r}
+#baseline results
+table(songsTest$Top10)
+```
+

@@ -1,0 +1,56 @@
+```{r}
+#Predicting the winner of the presidential elections
+#setwd("C:/Users/Deb/Desktop/Tinker/The Analytics Edge/Week 3/Datasets")
+poll = read.csv("PollingData.csv")
+str(poll)
+summary(poll)
+table(poll$Year)
+```
+
+```{r}
+# Multiple Imputation by chained equation
+
+#install.packages("mice")
+#library(mice)
+simple = poll[c("Rasmussen", "SurveyUSA", "PropR", "DiffCount")]
+summary(simple)
+set.seed(144)
+imputed = complete(mice(simple))
+summary(imputed)
+poll$Rasmussen = imputed$Rasmussen
+poll$SurveyUSA = imputed$SurveyUSA
+summary(poll)
+```
+
+```{r}
+#Model Training
+
+pollTrain = subset(poll, Year ==2004 | Year ==2008)
+pollTest = subset(poll, Year == 2012)
+table(pollTrain$Republican)
+#computing a smarter baseline model
+table(sign(pollTrain$Rasmussen))
+table(pollTrain$Republican, sign(pollTrain$Rasmussen))
+```
+
+```{r}
+cor(pollTrain[c("Rasmussen", "SurveyUSA", "PropR", "DiffCount", "Republican")])
+model1 = glm(Republican ~ PropR, data = pollTrain, family = "binomial")
+summary(model1)
+```
+
+```{r}
+predictTrain = predict(model1, type = "response")
+table(pollTrain$Republican, predictTrain >=0.5)
+model2 = glm(Republican ~ SurveyUSA + DiffCount, data = pollTrain, family = "binomial")
+summary(model2)
+```
+
+```{r}
+#Predict on the testing set
+
+table (pollTest$Republican, sign(pollTest$Rasmussen))
+predictTest = predict(model2, newdata = pollTest, type = "response")
+table(pollTest$Republican, predictTest >= 0.5)
+```
+
